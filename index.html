@@ -1,0 +1,683 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif Berpikir Komputasi (40 Soal)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .custom-radio:checked + label {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            color: #1e40af;
+            font-weight: 600;
+        }
+        .custom-radio:checked + label .badge-option {
+            background-color: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-16 antialiased">
+
+    <!-- Header Banner -->
+    <header class="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 text-white shadow-xl sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-3">
+            <div>
+                <h1 class="text-xl md:text-2xl font-extrabold tracking-tight">Kuis Berpikir Komputasi</h1>
+                <p class="text-xs md:text-sm text-blue-100 mt-0.5">Materi: Pilar, Karakteristik, Manfaat, & Dampak BK</p>
+            </div>
+            <div id="stickyProgress" class="flex items-center bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
+                <span class="text-xs md:text-sm font-medium mr-2">Progres:</span>
+                <span id="progressText" class="text-xs md:text-sm font-bold text-yellow-300">0 / 40 Terjawab</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 mt-8">
+
+        <!-- Form Identitas Siswa -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                Identitas Peserta Kuis
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
+                    <input type="text" id="namaSiswa" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm" placeholder="Masukkan nama lengkap Anda">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Kelas / No. Absen <span class="text-red-500">*</span></label>
+                    <input type="text" id="kelasSiswa" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm" placeholder="Contoh: X IPA 1 / 15">
+                </div>
+            </div>
+        </div>
+
+        <!-- Petunjuk Pengerjaan -->
+        <div class="bg-blue-50/80 border-l-4 border-blue-600 p-4 rounded-r-xl mb-8 text-sm text-blue-900 flex items-start gap-3">
+            <svg class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div>
+                <p class="font-bold">Petunjuk Pengerjaan:</p>
+                <p class="text-xs text-blue-800 mt-0.5">Pilihlah salah satu jawaban (A, B, C, atau D) yang paling tepat. Pastikan Identitas Nama & Kelas telah diisi sebelum menekan tombol <strong>Selesai & Hitung Skor</strong>.</p>
+            </div>
+        </div>
+
+        <!-- Form Kuis 40 Soal -->
+        <form id="quizForm" class="space-y-6">
+            <div id="quizContainer" class="space-y-6">
+                <!-- Soal di-render secara dinamis via JavaScript -->
+            </div>
+
+            <!-- Tombol Selesai -->
+            <div class="pt-6">
+                <button type="button" onclick="hitungSkor()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-4 rounded-2xl shadow-lg transition duration-200 text-lg flex items-center justify-center gap-2 cursor-pointer">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Selesai & Hitung Skor
+                </button>
+            </div>
+        </form>
+
+        <!-- Rekapitulasi Hasil (Modal Dialog) -->
+        <div id="resultModal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 md:p-8 transform transition-all border border-slate-100">
+                <div class="text-center mb-6">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full mb-3 shadow-inner">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-extrabold text-slate-800">Hasil Kuis Anda</h3>
+                    <p class="text-xs text-slate-500 mt-1">Rekapitulasi pengerjaan Kuis Berpikir Komputasi</p>
+                </div>
+
+                <!-- Rincian Hasil -->
+                <div class="bg-slate-50 rounded-2xl p-5 border border-slate-200 space-y-3.5 mb-6">
+                    <div class="flex justify-between border-b border-slate-200 pb-2.5 text-sm">
+                        <span class="text-slate-500">Nama Lengkap:</span>
+                        <span id="resNama" class="font-bold text-slate-800">-</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-200 pb-2.5 text-sm">
+                        <span class="text-slate-500">Kelas / Absen:</span>
+                        <span id="resKelas" class="font-bold text-slate-800">-</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-200 pb-2.5 text-sm">
+                        <span class="text-slate-500">Jawaban Benar:</span>
+                        <span id="resBenar" class="font-bold text-emerald-600">0 / 40</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-200 pb-2.5 text-sm">
+                        <span class="text-slate-500">Jawaban Salah:</span>
+                        <span id="resSalah" class="font-bold text-rose-600">0 / 40</span>
+                    </div>
+                    <div class="flex justify-between pt-1 items-center">
+                        <span class="font-semibold text-slate-700 text-sm">Skor Akhir (Skala 100):</span>
+                        <span id="resSkor" class="font-black text-3xl text-blue-600">0</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <button id="btnKirimWA" onclick="kirimKeWA()" class="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-base cursor-pointer">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.597-1.148 4.194 4.294-1.126 1.598.996z"/></svg>
+                        Kirim Hasil ke WhatsApp Guru
+                    </button>
+                    <button onclick="tutupModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 rounded-xl transition text-sm cursor-pointer">
+                        Tinjau Kembali Jawaban
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Script Data 40 Soal & Kunci Jawaban -->
+    <script>
+        const soalData = [
+            // --- 1. PILAR BERPIKIR KOMPUTASI (1-10) ---
+            {
+                id: 1,
+                kategori: "Pilar BK - Dekomposisi",
+                pertanyaan: "Proses memecah masalah kompleks menjadi bagian-bagian kecil yang lebih sederhana dan mudah dikelola dinamakan...",
+                opsi: { A: "Abstraksi", B: "Dekomposisi", C: "Pengenalan Pola", D: "Algoritma" },
+                kunci: "B"
+            },
+            {
+                id: 2,
+                kategori: "Pilar BK - Pengenalan Pola",
+                pertanyaan: "Mengamati kesamaan bentuk, perilaku, atau karakteristik dari beberapa permasalahan yang pernah dihadapi sebelumnya merupakan prinsip pilar...",
+                opsi: { A: "Algoritma", B: "Abstraksi", C: "Pengenalan Pola", D: "Dekomposisi" },
+                kunci: "C"
+            },
+            {
+                id: 3,
+                kategori: "Pilar BK - Abstraksi",
+                pertanyaan: "Fokus pada informasi yang penting dan relevan serta mengabaikan detail yang tidak penting disebut...",
+                opsi: { A: "Abstraksi", B: "Algoritma", C: "Dekomposisi", D: "Evaluasi" },
+                kunci: "A"
+            },
+            {
+                id: 4,
+                kategori: "Pilar BK - Algoritma",
+                pertanyaan: "Urutan langkah-langkah terstruktur dan logis untuk menyelesaikan masalah atau mencapai tujuan tertentu dinamakan...",
+                opsi: { A: "Dekomposisi", B: "Algoritma", C: "Pengenalan Pola", D: "Abstraksi" },
+                kunci: "B"
+            },
+            {
+                id: 5,
+                kategori: "Pilar BK - Dekomposisi",
+                pertanyaan: "Saat menyusun pentas seni sekolah, ketua panitia membagi tugas menjadi tim acara, konsumsi, dan dokumentasi. Hal ini mengimplementasikan...",
+                opsi: { A: "Dekomposisi", B: "Abstraksi", C: "Pengenalan Pola", D: "Algoritma" },
+                kunci: "A"
+            },
+            {
+                id: 6,
+                kategori: "Pilar BK - Pengenalan Pola",
+                pertanyaan: "Seorang teknisi komputer dapat mendiagnosis kerusakan laptop dengan cepat karena gejala yang muncul sama seperti laptop yang ia perbaiki kemarin. Hal ini memanfaatkan pilar...",
+                opsi: { A: "Abstraksi", B: "Pengenalan Pola", C: "Algoritma", D: "Dekomposisi" },
+                kunci: "B"
+            },
+            {
+                id: 7,
+                kategori: "Pilar BK - Abstraksi",
+                pertanyaan: "Dalam peta rute bus kota, pembuat peta hanya menampilkan titik halte dan garis rute tanpa menampilkan gambar rumah warga di sekitarnya. Hal ini contoh dari...",
+                opsi: { A: "Abstraksi", B: "Algoritma", C: "Pengenalan Pola", D: "Dekomposisi" },
+                kunci: "A"
+            },
+            {
+                id: 8,
+                kategori: "Pilar BK - Algoritma",
+                pertanyaan: "Panduan resep masakan yang memuat instruksi langkah demi langkah dari persiapan bahan hingga menyajikan makanan termasuk bentuk dari...",
+                opsi: { A: "Abstraksi", B: "Dekomposisi", C: "Algoritma", D: "Pengenalan Pola" },
+                kunci: "C"
+            },
+            {
+                id: 9,
+                kategori: "Pilar BK - Dekomposisi",
+                pertanyaan: "Mengapa dekomposisi sangat penting dalam menyelesaikan masalah besar?",
+                opsi: { 
+                    A: "Agar masalah diabaikan sebagian", 
+                    B: "Agar masalah menjadi rumit", 
+                    C: "Agar masalah besar dapat diselesaikan secara bertahap lewat komponen-komponen kecil", 
+                    D: "Agar solusi dibuat tanpa rencana" 
+                },
+                kunci: "C"
+            },
+            {
+                id: 10,
+                kategori: "Pilar BK - Abstraksi",
+                pertanyaan: "Contoh penerapan abstraksi dalam dunia pemodelan sistem adalah...",
+                opsi: { 
+                    A: "Membuat ikon lokasi pada aplikasi GPS tanpa perlu menggambarkan denah fisik bangunan secara mendetail", 
+                    B: "Membagi kelompok kerja menjadi 5 divisi", 
+                    C: "Menyusun jadwal pelajaran mingguan", 
+                    D: "Mencatat daftar inventaris barang" 
+                },
+                kunci: "A"
+            },
+
+            // --- 2. KARAKTERISTIK BERPIKIR KOMPUTASI (11-20) ---
+            {
+                id: 11,
+                kategori: "Karakteristik BK",
+                pertanyaan: "Salah satu karakteristik mendasar dari berpikir komputasi adalah...",
+                opsi: { 
+                    A: "Wajib menggunakan perangkat komputer canggih", 
+                    B: "Merupakan formulasi pemecahan masalah sehingga solusinya dapat dijalankan oleh manusia atau komputer", 
+                    C: "Menghafal bahasa pemrograman tingkat tinggi", 
+                    D: "Menghindari penggunaan analisis matematika" 
+                },
+                kunci: "B"
+            },
+            {
+                id: 12,
+                kategori: "Karakteristik BK",
+                pertanyaan: "Berpikir komputasi bersifat *unplugged*, yang berarti...",
+                opsi: { 
+                    A: "Dapat dipelajari dan diterapkan tanpa harus selalu menggunakan komputer/laptop", 
+                    B: "Komputer harus selalu tersambung ke jaringan listrik", 
+                    C: "Hanya berlaku bagi pengembang software profesional", 
+                    D: "Tidak menggunakan logika sama sekali" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 13,
+                kategori: "Karakteristik BK",
+                pertanyaan: "Karakteristik berpikir komputasi yang menekankan pada urutan penalaran yang masuk akal dan teratur dinamakan...",
+                opsi: { A: "Berpikir Acak", B: "Berpikir Logis dan Sistematis", C: "Spekulatif", D: "Subjektif" },
+                kunci: "B"
+            },
+            {
+                id: 14,
+                kategori: "Karakteristik BK",
+                pertanyaan: "Karakteristik BK dalam hal efisiensi solusi berfokus pada...",
+                opsi: { 
+                    A: "Meminimalkan penggunaan waktu dan sumber daya dalam menyelesaikan masalah", 
+                    B: "Memperlama waktu pengerjaan tugas", 
+                    C: "Menggunakan cara yang paling rumit", 
+                    D: "Mengabaikan pengujian hasil" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 15,
+                kategori: "Karakteristik BK",
+                pertanyaan: "Pernyataan yang BENAR mengenai konsep berpikir komputasi adalah...",
+                opsi: { 
+                    A: "BK adalah cara berpikir manusia, bukan cara berpikir seperti mesin", 
+                    B: "BK bertujuan mengubah cara kerja otak manusia menjadi persis seperti CPU", 
+                    C: "BK hanya bermanfaat pada mata pelajaran Informatika saja", 
+                    D: "BK selalu menghasilkan keluaran berupa program aplikasi" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 16,
+                kategori: "Karakteristik BK",
+                pertanyaan: "Seseorang yang menguasai berpikir komputasi saat menghadapi masalah rumit akan bertindak...",
+                opsi: { 
+                    A: "Panik dan membiarkan masalah berlarut-larut", 
+                    B: "Percaya diri, tenang, dan mampu mengurai kompleksitas secara sistematis", 
+                    C: "Menggunakan tebakan secara acak", 
+                    D: "Langsung membuat program tanpa menganalisis penyebabnya" 
+                },
+                kunci: "B"
+            },
+            {
+                id: 17,
+                kategori: "Karakteristik BK",
+                pertanyaan: "Merancang solusi sedemikian rupa sehingga solusi tersebut dapat diterapkan kembali untuk masalah lain yang sejenis dinamakan...",
+                opsi: { A: "Redundansi", B: "Generalisasi Solusi / Reusabilitas", C: "Reduksi", D: "Kompilasi" },
+                kunci: "B"
+            },
+            {
+                id: 18,
+                kategori: "Karakteristik BK",
+                pertanyaan: "Proses menguji, mengidentifikasi, dan mengoreksi kesalahan pada langkah-langkah penyelesaian masalah dalam BK dinamakan...",
+                opsi: { A: "Debugging dan Iterasi", B: "Inisialisasi", C: "Formatting", D: "Pengarsipan" },
+                kunci: "A"
+            },
+            {
+                id: 19,
+                kategori: "Karakteristik BK",
+                pertanyaan: "Salah satu indikator utama dari karakteristik berpikir komputasi adalah mampunya seseorang dalam melakukan otomatisasi, yaitu...",
+                opsi: { 
+                    A: "Menggunakan bantuan algoritma agar pekerjaan berulang dapat selesai otomatis dan cepat", 
+                    B: "Mengerjakan seluruh tugas manual tanpa alat bantu", 
+                    C: "Menghapus semua data yang tidak terpakai", 
+                    D: "Mematikan perangkat jaringan" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 20,
+                kategori: "Karakteristik BK",
+                pertanyaan: "Apakah Berpikir Komputasi sama dengan keterampilan pemrograman (*coding*)?",
+                opsi: { 
+                    A: "Sama persis, BK adalah nama lain dari coding", 
+                    B: "Berbeda, BK adalah kerangka berpikir pemecahan masalah, sedangkan coding adalah salah satu alat implementasinya", 
+                    C: "Sama, karena keduanya hanya dilakukan di depan komputer", 
+                    D: "Berbeda, karena BK tidak memiliki hubungan apapun dengan pemrograman" 
+                },
+                kunci: "B"
+            },
+
+            // --- 3. MANFAAT BERPIKIR KOMPUTASI (21-30) ---
+            {
+                id: 21,
+                kategori: "Manfaat BK",
+                pertanyaan: "Manfaat utama menerapkan berpikir komputasi dalam kehidupan sehari-hari adalah...",
+                opsi: { 
+                    A: "Mampu menyelesaikan berbagai persoalan kompleks secara efektif, efisien, dan terstruktur", 
+                    B: "Dapat merakit komponen perangkat keras komputer", 
+                    C: "Menjadi ahli dalam meretas jaringan internet", 
+                    D: "Menghilangkan seluruh beban kerja manusia secara instan" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 22,
+                kategori: "Manfaat BK",
+                pertanyaan: "Dalam dunia kerja era digital, keterampilan Berpikir Komputasi sangat dicari karena membantu karyawan untuk...",
+                opsi: { 
+                    A: "Membuat keputusan berdasarkan analisis data yang akurat dan rasional", 
+                    B: "Mengambil alih seluruh wewenang pimpinan", 
+                    C: "Mengurangi jam kerja kantor", 
+                    D: "Menghindari penggunaan teknologi modern" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 23,
+                kategori: "Manfaat BK",
+                pertanyaan: "Bagaimana penerapan berpikir komputasi membantu seorang siswa dalam belajar?",
+                opsi: { 
+                    A: "Melatih daya nalar kritis, kreatif, dan kemampuan pemecahan masalah saat pengerjaan tugas", 
+                    B: "Membuat siswa tidak perlu lagi membaca buku teks", 
+                    C: "Menjamin nilai sempurna tanpa perlu belajar", 
+                    D: "Mengubah teks tulisan tangan menjadi cetakan digital secara otomatis" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 24,
+                kategori: "Manfaat BK",
+                pertanyaan: "Seorang wirausahawan menganalisis tren penjualan bulan lalu untuk menentukan stok barang bulan depan. Manfaat BK yang terlihat adalah...",
+                opsi: { A: "Otomatisasi pabrik", B: "Pengenalan pola untuk efisiensi strategi bisnis", C: "Penghapusan biaya operasional", D: "Pengurangan modal kerja" },
+                kunci: "B"
+            },
+            {
+                id: 25,
+                kategori: "Manfaat BK",
+                pertanyaan: "Manfaat pilar Abstraksi saat menyusun ringkasan materi pelajaran adalah...",
+                opsi: { 
+                    A: "Menulis ulang seluruh isi buku tanpa ada yang tertinggal", 
+                    B: "Menyaring dan menyajikan poin inti materi saja sehingga lebih mudah dipelajari", 
+                    C: "Menambahkan gambar hiasan sebanyak-banyaknya", 
+                    D: "Mengubah ukuran font menjadi kecil" 
+                },
+                kunci: "B"
+            },
+            {
+                id: 26,
+                kategori: "Manfaat BK",
+                pertanyaan: "Mencegah terjadinya kekeliruan berulang pada pekerjaan yang sama merupakan manfaat dari menerapkan pilar...",
+                opsi: { A: "Pengenalan Pola", B: "Dekomposisi", C: "Abstraksi", D: "Algoritma" },
+                kunci: "A"
+            },
+            {
+                id: 27,
+                kategori: "Manfaat BK",
+                pertanyaan: "Menyusun rangkaian langkah kerja belajar yang sistematis menjelang ujian akhir adalah bentuk manfaat pilar...",
+                opsi: { A: "Algoritma", B: "Abstraksi", C: "Enkripsi", D: "Kompilasi" },
+                kunci: "A"
+            },
+            {
+                id: 28,
+                kategori: "Manfaat BK",
+                pertanyaan: "Di bidang sains dan kedokteran, berpikir komputasi memberikan manfaat nyata berupa...",
+                opsi: { 
+                    A: "Kemampuan memodelkan dan mensimulasikan penyebaran penyakit secara akurat", 
+                    B: "Menghilangkan kebutuhan uji laboratorium", 
+                    C: "Menemukan obat baru tanpa penelitian", 
+                    D: "Menggantikan seluruh tenaga medis dengan mesin" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 29,
+                kategori: "Manfaat BK",
+                pertanyaan: "Kemampuan berpikir komputasi melatih seseorang untuk memiliki sikap mental...",
+                opsi: { A: "Gampang percaya informasi hoax", B: "Kritis, analitis, dan tidak terburu-buru menyimpulkan", C: "Pasif saat diskusi", D: "Pesimis hadapi masalah" },
+                kunci: "B"
+            },
+            {
+                id: 30,
+                kategori: "Manfaat BK",
+                pertanyaan: "Manfaat pilar Dekomposisi pada saat mengerjakan tugas kelompok besar adalah...",
+                opsi: { 
+                    A: "Membagi pekerjaan menjadi sub-tugas kecil sesuai keahlian anggota agar cepat selesai", 
+                    B: "Menyerahkan semua pekerjaan ke satu orang", 
+                    C: "Membatalkan tugas jika terlalu berat", 
+                    D: "Mengerjakan tugas tanpa perancangan" 
+                },
+                kunci: "A"
+            },
+
+            // --- 4. DAMPAK BERPIKIR KOMPUTASI (31-40) ---
+            {
+                id: 31,
+                kategori: "Dampak BK",
+                pertanyaan: "Dampak positif utama dari berkembangnya berpikir komputasi di era digital saat ini adalah...",
+                opsi: { 
+                    A: "Terciptanya berbagai inovasi teknologi yang mempermudah kehidupan manusia", 
+                    B: "Ketergantungan total manusia pada gadget", 
+                    C: "Menurunnya komunikasi tatap muka", 
+                    D: "Hilangnya seluruh jenis pekerjaan konvensional" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 32,
+                kategori: "Dampak BK",
+                pertanyaan: "Penerapan sistem otomatisasi berbasis algoritma komputasi di industri dapat menimbulkan dampak negatif berupa...",
+                opsi: { 
+                    A: "Produktivitas menurun", 
+                    B: "Potensi pengurangan atau pergeseran tenaga kerja manusia pada sektor tertentu", 
+                    C: "Waktu produksi semakin lambat", 
+                    D: "Kualitas barang menjadi tidak standar" 
+                },
+                kunci: "B"
+            },
+            {
+                id: 33,
+                kategori: "Dampak BK",
+                pertanyaan: "Dampak positif dari penggunaan pilar Pengenalan Pola dalam sistem kecerdasan buatan (AI) adalah...",
+                opsi: { 
+                    A: "Komputer dapat mengenali wajah atau suara untuk verifikasi keamanan yang tinggi", 
+                    B: "Membuat komputer mudah terserang virus", 
+                    C: "Memperlambat proses pengolahan data", 
+                    D: "Menghamburkan kapasitas memori" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 34,
+                kategori: "Dampak BK",
+                pertanyaan: "Penerapan berpikir komputasi berpengaruh pada kemampuan pemecahan masalah individual, yaitu...",
+                opsi: { 
+                    A: "Membuat setiap keputusan penyelesaian masalah lebih terukur dan minim kegagalan", 
+                    B: "Membuat individu selalu bergantung pada komputer", 
+                    C: "Meningkatkan durasi pengerjaan masalah", 
+                    D: "Menghambat kreativitas berpikir" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 35,
+                kategori: "Dampak BK",
+                pertanyaan: "Dampak negatif yang muncul jika logika berpikir komputasi disalahgunakan tanpa etika digital adalah...",
+                opsi: { 
+                    A: "Pembuatan bot/algoritma untuk manipulasi data dan penyebaran hoaks secara masif", 
+                    B: "Perangkat keras cepat rusak", 
+                    C: "Koneksi internet menjadi lambat", 
+                    D: "Layar monitor cepat redup" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 36,
+                kategori: "Dampak BK",
+                pertanyaan: "Algoritma rekomendasi media sosial membantu menampilkan konten relevan, namun dampak negatif sosialnya adalah...",
+                opsi: { 
+                    A: "Fenomena *echo chamber* di mana pengguna hanya terpapar sudut pandang yang sejenis", 
+                    B: "Hematnya kuota data", 
+                    C: "Meningkatnya daya ingat pengguna", 
+                    D: "Aplikasi media sosial tidak bisa ditutup" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 37,
+                kategori: "Dampak BK",
+                pertanyaan: "Penerapan sistem Tilang Elektronik (ETLE) berbasis komputasi dampak positifnya bagi kedisiplinan lalu lintas adalah...",
+                opsi: { 
+                    A: "Penindakan pelanggaran menjadi transparan, adil, dan efisien tanpa interaksi langsung", 
+                    B: "Menambah jumlah polisi di persimpangan jalan", 
+                    C: "Meningkatkan angka kemacetan jalan", 
+                    D: "Menghapus biaya denda tilang" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 38,
+                kategori: "Dampak BK",
+                pertanyaan: "Dampak berpikir komputasi pada perkembangan aplikasi kesehatan (*health-tech*) adalah...",
+                opsi: { 
+                    A: "Memungkinkan deteksi dini penyakit melalui analisis algoritma pemindaian medis", 
+                    B: "Penurunan kualitas layanan rumah sakit", 
+                    C: "Menghilangkan profesi dokter spesialis", 
+                    D: "Memperlama proses diagnosa pasien" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 39,
+                kategori: "Dampak BK",
+                pertanyaan: "Siswa yang terbiasa berpikir komputasi tidak gampang terpengaruh isu negatif di media sosial karena ia merasakan dampak positif berupa...",
+                opsi: { 
+                    A: "Kebiasaan verifikasi data dan pembuktian fakta secara logis sebelum mempercayainya", 
+                    B: "Langsung membagikan kabar burung ke grup media sosial", 
+                    C: "Menutup diri dari informasi luar", 
+                    D: "Menyukai judul berita yang provokatif" 
+                },
+                kunci: "A"
+            },
+            {
+                id: 40,
+                kategori: "Dampak BK",
+                pertanyaan: "Dampak jangka panjang penguasaan Berpikir Komputasi bagi generasi muda di masa depan adalah...",
+                opsi: { 
+                    A: "Membentuk sumber daya manusia yang adaptif, inovatif, dan siap bersaing secara global", 
+                    B: "Membuat generasi muda enggan berinteraksi sosial secara langsung", 
+                    C: "Memaksa semua orang memilih profesi programmer", 
+                    D: "Menurunkan minat membaca literatur ilmiah" 
+                },
+                kunci: "A"
+            }
+        ];
+
+        // Render Soal ke HTML
+        const container = document.getElementById('quizContainer');
+
+        function renderQuiz() {
+            container.innerHTML = soalData.map((item, idx) => {
+                return `
+                    <div class="bg-white rounded-2xl shadow-sm p-5 md:p-6 border border-slate-200 transition hover:shadow-md" id="card-soal-${item.id}">
+                        <div class="flex items-center justify-between mb-3 border-b pb-2.5 border-slate-100">
+                            <span class="text-xs font-bold tracking-wider px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
+                                Soal ${idx + 1} dari 40
+                            </span>
+                            <span class="text-xs font-medium text-slate-400">${item.kategori}</span>
+                        </div>
+                        <p class="text-sm md:text-base font-semibold text-slate-800 mb-4 leading-relaxed">${item.pertanyaan}</p>
+                        
+                        <div class="space-y-2.5">
+                            ${Object.keys(item.opsi).map(key => `
+                                <div class="relative">
+                                    <input type="radio" 
+                                           name="soal_${item.id}" 
+                                           id="opsi_${item.id}_${key}" 
+                                           value="${key}" 
+                                           onchange="updateProgress()"
+                                           class="hidden custom-radio">
+                                    <label for="opsi_${item.id}_${key}" 
+                                           class="flex items-start p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition text-sm text-slate-700 select-none">
+                                        <span class="badge-option font-bold mr-3 text-slate-600 bg-slate-100 border border-slate-300 w-6 h-6 flex items-center justify-center rounded-lg text-xs shrink-0 transition">${key}</span>
+                                        <span class="pt-0.5">${item.opsi[key]}</span>
+                                    </label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Hitung Jumlah Soal Terjawab
+        function updateProgress() {
+            let terjawab = 0;
+            soalData.forEach(item => {
+                if(document.querySelector(`input[name="soal_${item.id}"]:checked`)){
+                    terjawab++;
+                }
+            });
+            document.getElementById('progressText').innerText = `${terjawab} / 40 Terjawab`;
+        }
+
+        // Variabel Penyimpan Hasil
+        let globalHasil = {};
+
+        // Hitung Skor Akhir
+        function hitungSkor() {
+            const nama = document.getElementById('namaSiswa').value.trim();
+            const kelas = document.getElementById('kelasSiswa').value.trim();
+
+            if (!nama || !kelas) {
+                alert("Mohon isi NAMA LENGKAP dan KELAS Anda terlebih dahulu di bagian atas halaman!");
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            let benar = 0;
+            let salah = 0;
+
+            soalData.forEach(item => {
+                const selected = document.querySelector(`input[name="soal_${item.id}"]:checked`);
+                if (selected && selected.value === item.kunci) {
+                    benar++;
+                } else {
+                    salah++;
+                }
+            });
+
+            // Rumus Skor: (Jumlah Benar / 40) * 100
+            const totalSoal = soalData.length;
+            const skorAkhir = Math.round((benar / totalSoal) * 100);
+
+            // Simpan Hasil ke Objek Global
+            globalHasil = {
+                nama: nama,
+                kelas: kelas,
+                benar: benar,
+                salah: salah,
+                skor: skorAkhir
+            };
+
+            // Inject Data ke Modal Rekapitulasi
+            document.getElementById('resNama').innerText = nama;
+            document.getElementById('resKelas').innerText = kelas;
+            document.getElementById('resBenar').innerText = `${benar} / ${totalSoal}`;
+            document.getElementById('resSalah').innerText = `${salah} / ${totalSoal}`;
+            document.getElementById('resSkor').innerText = skorAkhir;
+
+            // Tampilkan Modal
+            document.getElementById('resultModal').classList.remove('hidden');
+        }
+
+        function tutupModal() {
+            document.getElementById('resultModal').classList.add('hidden');
+        }
+
+        // Kirim Pesan Skor ke WhatsApp Guru (087863539155 -> 6287863539155)
+        function kirimKeWA() {
+            const nomorGuru = "6287863539155";
+            
+            // Format Pesan WA Terstruktur & Rapi
+            const teksPesan = `Halo Bapak Dio,%0A%0ABerikut adalah hasil pengerjaan Kuis Interaktif Berpikir Komputasi (Computational Thinking):%0A%0A` +
+                `📋 *IDENTITAS SISWA*%0A` +
+                `• Nama Lengkap: *${globalHasil.nama}*%0A` +
+                `• Kelas / Absen: *${globalHasil.kelas}*%0A%0A` +
+                `📊 *REKAPITULASI HASIL*%0A` +
+                `• Jumlah Jawaban Benar: *${globalHasil.benar}* soal%0A` +
+                `• Jumlah Jawaban Salah: *${globalHasil.salah}* soal%0A` +
+                `• *SKOR AKHIR:* *${globalHasil.skor} / 100*%0A%0A` +
+                `Terima kasih pak! 🙏`;
+
+            const urlWA = `https://wa.me/${nomorGuru}?text=${teksPesan}`;
+            window.open(urlWA, '_blank');
+        }
+
+        // Inisialisasi Render Saat Load
+        window.onload = function() {
+            renderQuiz();
+        };
+    </script>
+</body>
+</html>
+```
